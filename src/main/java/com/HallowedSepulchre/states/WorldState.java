@@ -11,8 +11,6 @@ public class WorldState extends State {
         super.inLobby = false;
         super.timer = timer;
 
-        System.err.println("WORLD STATE!");
-
     }
 
     public State nextState(int region){
