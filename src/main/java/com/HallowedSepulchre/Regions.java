@@ -75,8 +75,8 @@ public final class Regions {
     public static Coord THIRD_FINISH_W = new Coord(2395, 5856);
 
 
-    public static int FOURTH_REGION_START = 10074;
-    public static int FOURTH_REGION_B = 10075;
+    public static int FOURTH_REGION_START = 10075;
+    public static int FOURTH_REGION_B = 10074;
 
     public static HashSet<Integer> FOURTH_REGIONS = new HashSet<Integer>(
         Arrays.asList(
@@ -86,18 +86,20 @@ public final class Regions {
     );
 
     public static Coord FOURTH_START_N = new Coord(2528, 5860);
-    public static Coord FOURTH_START_S = new Coord(2528,5851);
+    public static Coord FOURTH_START_S = new Coord(2528,5852);
 
     public static Coord FOURTH_FINISH_COORD = new Coord(2528, 5845);
 
 
     public static int FIFTH_REGION_START = 9051;
     public static int FIFTH_REGION_B = 9307;
+    public static int FIFTH_REGION_C = 9052;
 
     public static HashSet<Integer> FIFTH_REGIONS = new HashSet<Integer>(
         Arrays.asList(
             FIFTH_REGION_START,
-            FIFTH_REGION_B
+            FIFTH_REGION_B,
+            FIFTH_REGION_C
         )
     );
 

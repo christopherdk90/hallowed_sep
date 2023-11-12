@@ -4,6 +4,9 @@ import com.HallowedSepulchre.Regions;
 import com.HallowedSepulchre.Timer;
 import com.HallowedSepulchre.runs.Run;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class LobbyState extends State {
     
     public LobbyState(Run run, Timer timer) {
@@ -13,6 +16,8 @@ public class LobbyState extends State {
         super.inSepulchre = true;
         super.inLobby = true;
         super.timer = timer;
+
+        log.debug("Entered Hallowed Sepulchre lobby");
 
         timer.ResetAll();
 
@@ -26,7 +31,7 @@ public class LobbyState extends State {
             return new LoadingState(run, timer, 1);
         }
         else {
-            return new WorldState(timer);
+            return new WorldState(timer, region);
         }
     }
 

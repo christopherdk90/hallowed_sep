@@ -107,7 +107,7 @@ public class HallowedSepulchrePlugin extends Plugin
 		}
 		if (playerState == null) {
 			timer = new Timer();
-			playerState = new WorldState(timer);
+			playerState = new WorldState(timer, 0);
 		}
 
 		// Player returned to lobby after completing a run

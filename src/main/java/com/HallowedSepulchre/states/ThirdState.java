@@ -7,6 +7,9 @@ import com.HallowedSepulchre.helpers.VarHelper;
 import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.runs.Run;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ThirdState extends State {
     
     public ThirdState(Run run, Timer timer, Variations var) {
@@ -19,6 +22,8 @@ public class ThirdState extends State {
         super.paused = true;
 
         timer.ResetTicks();
+
+        log.debug("Starting " + super.descriptor);
         
     }
 
@@ -54,7 +59,7 @@ public class ThirdState extends State {
         }
         // else if in world
         else if (region != Regions.THIRD_REGION_START){
-            return new WorldState(timer);
+            return new WorldState(timer, region);
         }
 
         return this;

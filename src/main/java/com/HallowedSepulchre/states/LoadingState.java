@@ -5,6 +5,9 @@ import com.HallowedSepulchre.Timer;
 import com.HallowedSepulchre.Variations;
 import com.HallowedSepulchre.runs.Run;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class LoadingState extends State {
     
     public LoadingState(Run run, Timer timer, int floor) {
@@ -15,7 +18,10 @@ public class LoadingState extends State {
         super.inLobby = false;
         super.timer = timer;
 
+        log.debug("Entering loading state");
+
         if (super.run == null){
+            log.debug("Starting new run...");
             super.run = new Run();
         }
 

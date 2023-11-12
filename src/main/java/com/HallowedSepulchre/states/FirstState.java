@@ -7,6 +7,9 @@ import com.HallowedSepulchre.helpers.VarHelper;
 import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.runs.Run;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class FirstState extends State {
 
     public FirstState(Run run, Timer timer, Variations var) {
@@ -18,7 +21,9 @@ public class FirstState extends State {
         super.timer = timer;
         super.paused = true;
 
-        timer.ResetTicks();        
+        timer.ResetTicks();      
+        
+        log.debug("Starting " + super.descriptor);
 
     }
 
@@ -56,7 +61,7 @@ public class FirstState extends State {
         }
         // else if in world
         else if (!Regions.FIRST_REGIONS.contains(region)) {
-            return new WorldState(timer);
+            return new WorldState(timer, region);
         }
 
         return this;
