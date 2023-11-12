@@ -77,7 +77,7 @@ public class ThirdState extends State {
         if (run == null) return;
         if (run.third != null) return;
 
-        run.third = new Floor(floor, variation, timer.GetTicks());
+        run.third = new Floor(floor, variation, timer.GetTicks(), super.looted);
         timer.SaveSystemTimeEnd();
     }
 

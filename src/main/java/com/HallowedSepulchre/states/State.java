@@ -18,6 +18,8 @@ public abstract class State {
 
     public int plane = 0;
 
+    public int looted = 0;
+
     public String descriptor;
 
     public boolean inSepulchre;

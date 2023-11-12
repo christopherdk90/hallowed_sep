@@ -72,7 +72,7 @@ public class FourthState extends State {
         if (run == null) return;
         if (run.fourth != null) return;
 
-        run.fourth = new Floor(floor, variation, timer.GetTicks());
+        run.fourth = new Floor(floor, variation, timer.GetTicks(), super.looted);
         timer.SaveSystemTimeEnd();
     }
 

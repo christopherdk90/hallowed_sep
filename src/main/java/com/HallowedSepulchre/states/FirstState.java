@@ -44,17 +44,19 @@ public class FirstState extends State {
         if (region == Regions.LOBBY){
             return new LobbyState(run, timer);
         }
-        // Two finishing jump tiles trigger clock to pause
         else if (region == Regions.FIRST_TRANSITION_REGION 
-            && plane == Regions.FINISH_PLANE
-            && Regions.FIRST_END_E.Equals(xPos, yPos)) {
-            Save();
+            && plane == Regions.FINISH_PLANE) {
+                // Two finishing jump tiles trigger clock to pause
+                if (Regions.FIRST_END_E.Equals(xPos, yPos) 
+                || Regions.FIRST_END_W.Equals(xPos, yPos)) {
+                    Save();
+                }
+                else if (Regions.FIRST_FLOOR_BRIDGE.Equals(xPos, yPos) 
+                || Regions.FIRST_FLOOR_GRAPPLE.Equals(xPos, yPos)){
+                    super.looted = 1;
+                }
         }
-        else if (region == Regions.FIRST_TRANSITION_REGION 
-            && plane == Regions.FINISH_PLANE
-            && Regions.FIRST_END_W.Equals(xPos, yPos)) {
-            Save();
-        }
+
         // Player has clicked the stairs
         else if (region == Regions.SECOND_REGION_START){
             return new LoadingState(run, timer, 2);
@@ -79,7 +81,7 @@ public class FirstState extends State {
         if (run == null) return;
         if (run.first != null) return;
 
-        run.first = new Floor(floor, variation, timer.GetTicks());
+        run.first = new Floor(floor, variation, timer.GetTicks(), super.looted);
         timer.SaveSystemTimeEnd();
 
     }

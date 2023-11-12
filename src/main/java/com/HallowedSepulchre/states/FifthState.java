@@ -69,7 +69,7 @@ public class FifthState extends State {
         if (run == null) return;
         if (run.fifth != null) return;
 
-        run.fifth = new Floor(floor, variation, timer.GetTicks());
+        run.fifth = new Floor(floor, variation, timer.GetTicks(), super.looted);
         timer.SaveSystemTimeEnd();
     }
 

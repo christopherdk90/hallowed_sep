@@ -7,31 +7,24 @@ import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.configs.TimeDisplay;
 import com.HallowedSepulchre.helpers.TimeHelper;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.google.common.base.Strings;
 import com.google.inject.Provides;
+
 import javax.inject.Inject;
-import javax.print.attribute.standard.Fidelity;
 import java.util.*;
 
-import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.Player;
-import net.runelite.api.GameState;
-import net.runelite.api.ItemID;
-import net.runelite.api.Varbits;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
-import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.util.RSTimeUnit;
-import net.runelite.api.MenuAction;
-import net.runelite.api.coords.LocalPoint;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @PluginDescriptor(
@@ -39,6 +32,11 @@ import net.runelite.api.coords.LocalPoint;
 )
 public class HallowedSepulchrePlugin extends Plugin
 {
+
+	private static final String CONFIG_GROUP = "hallowedSepulchre";
+
+	private static final String BEST_RUN_KEY = "bestRun";
+	private static final String BEST_FLOORS = "bestFloors";
 
 	private State playerState;
 
@@ -48,13 +46,19 @@ public class HallowedSepulchrePlugin extends Plugin
 	public Run optRun;
 	public Run lastRun;
 
-	private Map<Integer, Map<Variations, Floor>> bestFloorMap = new HashMap<Integer, Map<Variations,Floor>>();
+	private Map<Integer, Map<Variations, Floor>> bestFloorMap;
 
 	@Inject
 	private Client client;
 
 	@Inject
 	private HallowedSepulchreConfig config;
+
+	@Inject
+	private ConfigManager configManager;
+
+	@Inject
+	private Gson gson;
 
 	@Inject
 	private OverlayManager overlayManager;
@@ -68,12 +72,21 @@ public class HallowedSepulchrePlugin extends Plugin
 		log.info("Hallowed Sepulchre plugin started!");
 		overlayManager.add(overlay);
 
+		// TODO: move this to trigger load when hits lobby for first time
+		bestRun = loadBestRunFromJson();
+		bestFloorMap = loadBestFloorsMapFromJson();
+		optRun = buildOptimalRun();
+		if (bestFloorMap == null){
+			bestFloorMap = new HashMap<Integer, Map<Variations,Floor>>();
+		}
+
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
 		log.info("Hallowed Sepulchre plugin stopped!");
+		super.shutDown();
 		overlayManager.remove(overlay);
 	}
 
@@ -129,6 +142,14 @@ public class HallowedSepulchrePlugin extends Plugin
 			optRun = Run.GetOptRun(optRun, lastRun);
 
 			addRunToBestFloorMap(lastRun);
+
+			saveBestRunToJson(bestRun);
+
+			saveBestFloorsMapToJson(bestFloorMap);
+
+			if (lastRun.first != null){
+				log.debug("Looted: " + lastRun.first.looted);
+			}
 
 		}
 
@@ -187,6 +208,55 @@ public class HallowedSepulchrePlugin extends Plugin
 		
 	}
 
+	private void saveBestRunToJson(Run run){
+
+		String json = gson.toJson(run);
+		configManager.setConfiguration(CONFIG_GROUP, BEST_RUN_KEY, json);
+
+	}
+
+	private Run loadBestRunFromJson(){
+
+		String json = configManager.getConfiguration(CONFIG_GROUP, BEST_RUN_KEY);
+		if (Strings.isNullOrEmpty(json))
+		{
+			return null;
+		}
+
+		// CHECKSTYLE:OFF
+		return gson.fromJson(json, new TypeToken<Run>(){}.getType());
+		// CHECKSTYLE:ON
+
+	}
+
+	private void saveBestFloorsMapToJson(Map<Integer,Map<Variations,Floor>> bestFloors){
+
+		String json = gson.toJson(bestFloors);
+		log.debug("Floors map: " + json);
+		configManager.setConfiguration(CONFIG_GROUP, BEST_FLOORS, json);
+
+	}
+
+	private Map<Integer,Map<Variations,Floor>> loadBestFloorsMapFromJson(){
+
+		String json = configManager.getConfiguration(CONFIG_GROUP, BEST_FLOORS);
+		if (Strings.isNullOrEmpty(json))
+		{
+			return null;
+		}
+
+		Map<Integer,Map<Variations,Floor>> bestFloorMap = gson.fromJson(json, new TypeToken<Map<Integer,Map<Variations,Floor>>>(){}.getType());
+
+		if (bestFloorMap != null){
+			log.debug("Loaded best floor map");
+		}
+
+		// CHECKSTYLE:OFF
+		return bestFloorMap;
+		// CHECKSTYLE:ON
+
+	}
+
 	private void safeAddFloorToBestFloorMap(Floor newFloor){
 
 		if (newFloor == null) return;
@@ -211,6 +281,61 @@ public class HallowedSepulchrePlugin extends Plugin
 			variationsMap.put(newFloor.variation, newFloor);
 		}
 		
+	}
+
+	private Run buildOptimalRun(){
+
+		if (bestFloorMap == null) {
+			return null;
+		}
+
+		Run optimal = new Run();
+
+		Map<Variations, Floor> first = bestFloorMap.get(Regions.FIRST_FLOOR);
+		if (first != null){
+			for (Floor variation : first.values()) {
+				if (optimal.first == null || variation.ticks < optimal.first.ticks){
+					optimal.first = variation;
+				}
+			}
+		}
+		Map<Variations, Floor> second = bestFloorMap.get(Regions.SECOND_FLOOR);
+		if (second != null){
+			for (Floor variation : second.values()) {
+				if (optimal.second == null || variation.ticks < optimal.second.ticks){
+					optimal.second = variation;
+				}
+			}
+		}
+		Map<Variations, Floor> third = bestFloorMap.get(Regions.THIRD_FLOOR);
+		if (third != null){
+			for (Floor variation : third.values()) {
+				if (optimal.third == null || variation.ticks < optimal.third.ticks){
+					optimal.third = variation;
+				}
+			}
+		}
+		Map<Variations, Floor> fourth = bestFloorMap.get(Regions.FOURTH_FLOOR);
+		if (fourth != null){
+			for (Floor variation : fourth.values()) {
+				if (optimal.fourth == null || variation.ticks < optimal.fourth.ticks){
+					optimal.fourth = variation;
+				}
+			}
+		}
+		Map<Variations, Floor> fifth = bestFloorMap.get(Regions.FIFTH_FLOOR);
+		if (fifth != null){
+			for (Floor variation : fifth.values()) {
+				if (optimal.fifth == null || variation.ticks < optimal.fifth.ticks){
+					optimal.fifth = variation;
+				}
+			}
+		}
+
+		optimal.Process();
+
+		return optimal;
+
 	}
 
 	public String getBestFloorTime(){

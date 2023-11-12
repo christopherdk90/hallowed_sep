@@ -36,6 +36,10 @@ public final class Regions {
             FIRST_REGION_START_W
         )
     );
+
+    // Loot squares
+    public static Coord FIRST_FLOOR_GRAPPLE = new Coord(2282, 5973); // Plane 1
+    public static Coord FIRST_FLOOR_BRIDGE = new Coord(2262, 5975); // PLane 1
     
     // First floor ends in transition region
     public static Coord FIRST_END_E = new Coord(2279, 5984);    

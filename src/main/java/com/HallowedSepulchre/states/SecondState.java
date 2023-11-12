@@ -85,7 +85,7 @@ public class SecondState extends State {
         if (run == null) return;
         if (run.second != null) return;
 
-        run.second = new Floor(floor, variation, timer.GetTicks());
+        run.second = new Floor(floor, variation, timer.GetTicks(), super.looted);
         timer.SaveSystemTimeEnd();
     }
 
