@@ -40,29 +40,33 @@ public class SecondState extends State {
             return new LobbyState(run, timer);
         }
         // Four finishing jump tiles trigger clock to pause
-        else if (plane == Regions.SECOND_END_PLANE 
+        else if (plane == Regions.FINISH_PLANE 
             && Regions.SECOND_FINISH_N.Equals(xPos, yPos)) {
             Save();
         }
-        else if (plane == Regions.SECOND_END_PLANE 
+        else if (plane == Regions.FINISH_PLANE 
             && Regions.SECOND_FINISH_E.Equals(xPos, yPos)) {
             Save();
         }
-        else if (plane == Regions.SECOND_END_PLANE 
+        else if (plane == Regions.FINISH_PLANE 
             && Regions.SECOND_FINISH_S.Equals(xPos, yPos)) {
             Save();
         }
-        else if (plane == Regions.SECOND_END_PLANE 
+        else if (plane == Regions.FINISH_PLANE 
             && Regions.SECOND_FINISH_W.Equals(xPos, yPos)) {
             Save();
         }
         // Player has clicked the stairs
-        else if (region == Regions.THIRD_START){
+        else if (region == Regions.THIRD_REGION_START){
             return new LoadingState(run, timer, 3);
         }
-        // else if region is in group of second regions, still in second floor
-        // else in world
+        // else if in world
+        else if (!Regions.SECOND_REGIONS.contains(region)){
+            return new WorldState(timer);
+        }
+
         return this;
+       
     }
 
     public void Tick(){

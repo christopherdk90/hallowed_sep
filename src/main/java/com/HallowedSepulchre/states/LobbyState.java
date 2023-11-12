@@ -22,7 +22,7 @@ public class LobbyState extends State {
         if (region == Regions.LOBBY) {
             return this;
         }
-        else if (region == Regions.FIRST_TRANSITION){
+        else if (region == Regions.FIRST_TRANSITION_REGION){
             return new LoadingState(run, timer, 1);
         }
         else {

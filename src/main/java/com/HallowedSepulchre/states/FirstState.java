@@ -40,23 +40,27 @@ public class FirstState extends State {
             return new LobbyState(run, timer);
         }
         // Two finishing jump tiles trigger clock to pause
-        else if (region == Regions.FIRST_TRANSITION 
-            && plane == Regions.FIRST_END_PLANE
+        else if (region == Regions.FIRST_TRANSITION_REGION 
+            && plane == Regions.FINISH_PLANE
             && Regions.FIRST_END_E.Equals(xPos, yPos)) {
             Save();
         }
-        else if (region == Regions.FIRST_TRANSITION 
-            && plane == Regions.FIRST_END_PLANE
+        else if (region == Regions.FIRST_TRANSITION_REGION 
+            && plane == Regions.FINISH_PLANE
             && Regions.FIRST_END_W.Equals(xPos, yPos)) {
             Save();
         }
         // Player has clicked the stairs
-        else if (region == Regions.SECOND_START){
+        else if (region == Regions.SECOND_REGION_START){
             return new LoadingState(run, timer, 2);
         }
-        // else if region is in group of first regions, still in first floor
-        // else in world
+        // else if in world
+        else if (!Regions.FIRST_REGIONS.contains(region)) {
+            return new WorldState(timer);
+        }
+
         return this;
+
     }
 
     public void Tick(){

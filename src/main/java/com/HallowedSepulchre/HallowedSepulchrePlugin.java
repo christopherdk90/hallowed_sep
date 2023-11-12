@@ -4,6 +4,7 @@ import com.HallowedSepulchre.states.State;
 import com.HallowedSepulchre.states.WorldState;
 import com.HallowedSepulchre.runs.Run;
 import com.HallowedSepulchre.runs.Floor;
+import com.HallowedSepulchre.configs.TimeDisplay;
 import com.HallowedSepulchre.helpers.TimeHelper;
 
 import com.google.inject.Provides;
@@ -153,16 +154,19 @@ public class HallowedSepulchrePlugin extends Plugin
 		if (timer == null){
 			return "";
 		}
-		//return timer.GetTicks() + "";
+		if (config.timeDisplay() == TimeDisplay.TICKS){
+			return timer.GetTicks() + "";
+		}
 		return TimeHelper.GetTimeFromSysTime(timer.GetSystemTimeStart(), timer.GetSystemTimeEnd(), 0);
-
 	}
 
 	public String GetCumulativeTime(){
 		if (timer == null){
 			return "";
 		}
-		//int total = timer.GetTicks() + timer.GetCumulativeTicks();
+		if (config.timeDisplay() == TimeDisplay.TICKS){
+			return (timer.GetTicks() + timer.GetCumulativeTicks()) + "";
+		}
 		return TimeHelper.GetTimeFromSysTime(timer.GetSystemTimeStart(), timer.GetSystemTimeEnd(), timer.GetCumulativeSystemTime());
 	}
 

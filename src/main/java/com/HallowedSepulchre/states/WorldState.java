@@ -10,6 +10,9 @@ public class WorldState extends State {
         super.inSepulchre = false;
         super.inLobby = false;
         super.timer = timer;
+
+        System.err.println("WORLD STATE!");
+
     }
 
     public State nextState(int region){

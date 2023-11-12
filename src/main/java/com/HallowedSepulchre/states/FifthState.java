@@ -3,17 +3,16 @@ package com.HallowedSepulchre.states;
 import com.HallowedSepulchre.Regions;
 import com.HallowedSepulchre.Timer;
 import com.HallowedSepulchre.Variations;
-import com.HallowedSepulchre.helpers.VarHelper;
 import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.runs.Run;
 
-public class ThirdState extends State {
+public class FifthState extends State {
     
-    public ThirdState(Run run, Timer timer, Variations var) {
-        super.floor = 3;
+    public FifthState(Run run, Timer timer, Variations var) {
+        super.floor = 5;
         super.run = run;
         super.variation = var;
-        super.descriptor = "Third Floor " + VarHelper.VarToString(var);
+        super.descriptor = "Fifth Floor";
         super.inSepulchre = true;
         super.timer = timer;
         super.paused = true;
@@ -36,24 +35,17 @@ public class ThirdState extends State {
             buffer = -1;
         }
 
+        // Either returned to lobby or finished floor
         if (region == Regions.LOBBY){
             return new LobbyState(run, timer);
         }
-        // Two finishing jump tiles trigger clock to pause
-        else if (plane == Regions.FINISH_PLANE 
-            && Regions.THIRD_FINISH_E.Equals(xPos, yPos)) {
+        // 
+        else if (plane == Regions.FIFTH_FINISH_PLANE 
+            && Regions.FIFTH_FINISH_COORD.Equals(xPos, yPos)) {
             Save();
-        }
-        else if (plane == Regions.FINISH_PLANE 
-            && Regions.THIRD_FINISH_W.Equals(xPos, yPos)) {
-            Save();
-        }
-        // Player has clicked the stairs
-        else if (region == Regions.FOURTH_REGION_START){
-            return new LoadingState(run, timer, 4);
         }
         // else if in world
-        else if (region != Regions.THIRD_REGION_START){
+        else if (!Regions.FIFTH_REGIONS.contains(region)){
             return new WorldState(timer);
         }
 
@@ -70,9 +62,9 @@ public class ThirdState extends State {
     private void Save(){
         paused = true;
         if (run == null) return;
-        if (run.third != null) return;
+        if (run.fifth != null) return;
 
-        run.third = new Floor(floor, variation, timer.GetTicks());
+        run.fifth = new Floor(floor, variation, timer.GetTicks());
         timer.SaveSystemTimeEnd();
     }
 

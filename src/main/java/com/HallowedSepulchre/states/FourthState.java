@@ -7,13 +7,13 @@ import com.HallowedSepulchre.helpers.VarHelper;
 import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.runs.Run;
 
-public class ThirdState extends State {
+public class FourthState extends State {
     
-    public ThirdState(Run run, Timer timer, Variations var) {
-        super.floor = 3;
+    public FourthState(Run run, Timer timer, Variations var) {
+        super.floor = 4;
         super.run = run;
         super.variation = var;
-        super.descriptor = "Third Floor " + VarHelper.VarToString(var);
+        super.descriptor = "Fourth Floor " + VarHelper.VarToString(var);
         super.inSepulchre = true;
         super.timer = timer;
         super.paused = true;
@@ -41,22 +41,17 @@ public class ThirdState extends State {
         }
         // Two finishing jump tiles trigger clock to pause
         else if (plane == Regions.FINISH_PLANE 
-            && Regions.THIRD_FINISH_E.Equals(xPos, yPos)) {
+            && Regions.FOURTH_FINISH_COORD.Equals(xPos, yPos)) {
             Save();
         }
-        else if (plane == Regions.FINISH_PLANE 
-            && Regions.THIRD_FINISH_W.Equals(xPos, yPos)) {
-            Save();
-        }
-        // Player has clicked the stairs
-        else if (region == Regions.FOURTH_REGION_START){
-            return new LoadingState(run, timer, 4);
+        else if (region == Regions.FIFTH_REGION_START){
+            return new LoadingState(run, timer, 5);
         }
         // else if in world
-        else if (region != Regions.THIRD_REGION_START){
+        else if (!Regions.FOURTH_REGIONS.contains(region)){
             return new WorldState(timer);
         }
-
+        
         return this;
         
     }
@@ -70,9 +65,9 @@ public class ThirdState extends State {
     private void Save(){
         paused = true;
         if (run == null) return;
-        if (run.third != null) return;
+        if (run.fourth != null) return;
 
-        run.third = new Floor(floor, variation, timer.GetTicks());
+        run.fourth = new Floor(floor, variation, timer.GetTicks());
         timer.SaveSystemTimeEnd();
     }
 
