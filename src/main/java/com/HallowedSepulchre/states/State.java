@@ -1,8 +1,8 @@
 package com.HallowedSepulchre.states;
 
+import com.HallowedSepulchre.HallowedSepulchrePlugin;
 import com.HallowedSepulchre.Timer;
-import com.HallowedSepulchre.Variations;
-import com.HallowedSepulchre.runs.Floor;
+import com.HallowedSepulchre.Variation;
 import com.HallowedSepulchre.runs.Run;
 
 public abstract class State {
@@ -11,7 +11,9 @@ public abstract class State {
 
     public int buffer = 4;
 
-    public Variations variation = Variations.None;
+    public Variation variation = Variation.None;
+
+    public int regionID = 0;
 
     public int xPos = -1;
     public int yPos = -1;
@@ -31,7 +33,9 @@ public abstract class State {
 
     public Run run;
 
-    public State nextState(int region){
+    protected HallowedSepulchrePlugin plugin;
+
+    public State nextState(){
         return this;
     }
 

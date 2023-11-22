@@ -1,10 +1,10 @@
 package com.HallowedSepulchre.helpers;
 
-import com.HallowedSepulchre.Variations;
+import com.HallowedSepulchre.Variation;
 
 public class VarHelper {
     
-    public static String VarToString(Variations variation){
+    public static String VarToString(Variation variation){
 
         switch(variation){
             case North: return "North";

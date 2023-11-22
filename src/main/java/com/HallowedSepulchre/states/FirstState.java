@@ -1,18 +1,20 @@
 package com.HallowedSepulchre.states;
 
+import com.HallowedSepulchre.HallowedSepulchrePlugin;
 import com.HallowedSepulchre.Regions;
 import com.HallowedSepulchre.Timer;
-import com.HallowedSepulchre.Variations;
+import com.HallowedSepulchre.Variation;
 import com.HallowedSepulchre.helpers.VarHelper;
 import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.runs.Run;
 
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.plugins.Plugin;
 
 @Slf4j
 public class FirstState extends State {
 
-    public FirstState(Run run, Timer timer, Variations var) {
+    public FirstState(HallowedSepulchrePlugin plugin, Run run, Timer timer, Variation var) {
         super.floor = 1;
         super.run = run;
         super.variation = var;
@@ -21,13 +23,17 @@ public class FirstState extends State {
         super.timer = timer;
         super.paused = true;
 
+        super.plugin = plugin;
+
         timer.ResetTicks();      
         
         log.debug("Starting " + super.descriptor);
 
+        plugin.loadFloor(floor, var);
+
     }
 
-    public State nextState(int region){
+    public State nextState(){
 
         if (buffer == -1){
             // do nothing
@@ -41,10 +47,10 @@ public class FirstState extends State {
             buffer = -1;
         }
 
-        if (region == Regions.LOBBY){
-            return new LobbyState(run, timer);
+        if (regionID == Regions.LOBBY){
+            return new LobbyState(super.plugin, run, timer);
         }
-        else if (region == Regions.FIRST_TRANSITION_REGION 
+        else if (regionID == Regions.FIRST_TRANSITION_REGION 
             && plane == Regions.FINISH_PLANE) {
                 // Two finishing jump tiles trigger clock to pause
                 if (Regions.FIRST_END_E.Equals(xPos, yPos) 
@@ -58,12 +64,12 @@ public class FirstState extends State {
         }
 
         // Player has clicked the stairs
-        else if (region == Regions.SECOND_REGION_START){
-            return new LoadingState(run, timer, 2);
+        else if (regionID == Regions.SECOND_REGION_START){
+            return new LoadingState(super.plugin, run, timer, 2);
         }
         // else if in world
-        else if (!Regions.FIRST_REGIONS.contains(region)) {
-            return new WorldState(timer, region);
+        else if (!Regions.FIRST_REGIONS.contains(regionID)) {
+            return new WorldState(super.plugin, timer);
         }
 
         return this;

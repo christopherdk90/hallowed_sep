@@ -4,12 +4,15 @@ import com.HallowedSepulchre.states.State;
 import com.HallowedSepulchre.states.WorldState;
 import com.HallowedSepulchre.runs.Run;
 import com.HallowedSepulchre.runs.Floor;
+import com.HallowedSepulchre.configs.OneCoffinDisplay;
 import com.HallowedSepulchre.configs.TimeDisplay;
 import com.HallowedSepulchre.helpers.TimeHelper;
+import com.HallowedSepulchre.helpers.VarHelper;
+import com.HallowedSepulchre.data.DataManager;
+import com.HallowedSepulchre.data.LoadFloorArgs;
+import com.HallowedSepulchre.data.RunManager;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.google.common.base.Strings;
 import com.google.inject.Provides;
 
 import javax.inject.Inject;
@@ -33,20 +36,17 @@ import lombok.extern.slf4j.Slf4j;
 public class HallowedSepulchrePlugin extends Plugin
 {
 
-	private static final String CONFIG_GROUP = "hallowedSepulchre";
-
-	private static final String BEST_RUN_KEY = "bestRun";
-	private static final String BEST_FLOORS = "bestFloors";
-
 	private State playerState;
 
-	private Timer timer;
+	public Timer timer;
 
-	public Run bestRun;
-	public Run optRun;
-	public Run lastRun;
+	private boolean initialized = false;
 
-	private Map<Integer, Map<Variations, Floor>> bestFloorMap;
+	private Floor currentFloor;
+
+	private Map<Integer, Map<Variation, Floor>> bestFloorMap;
+
+	private Map<Integer, Integer> goalMap;
 
 	@Inject
 	private Client client;
@@ -72,13 +72,8 @@ public class HallowedSepulchrePlugin extends Plugin
 		log.info("Hallowed Sepulchre plugin started!");
 		overlayManager.add(overlay);
 
-		// TODO: move this to trigger load when hits lobby for first time
-		bestRun = loadBestRunFromJson();
-		bestFloorMap = loadBestFloorsMapFromJson();
-		optRun = buildOptimalRun();
-		if (bestFloorMap == null){
-			bestFloorMap = new HashMap<Integer, Map<Variations,Floor>>();
-		}
+		timer = new Timer();
+		playerState = new WorldState(this, timer);
 
 	}
 
@@ -86,27 +81,48 @@ public class HallowedSepulchrePlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		log.info("Hallowed Sepulchre plugin stopped!");
-		super.shutDown();
 		overlayManager.remove(overlay);
+		playerState = null;
+		bestFloorMap = null;
+		initialized = false;
+		timer = null;
+		super.shutDown();
+		
 	}
 
-	public boolean IsInSepulchre(){
-		if (playerState == null) return false;
-		return playerState.inSepulchre;
-	}
+	public void Initialize(){
 
-	public boolean IsInLobby(){
-		if (playerState == null) return false;
-		return playerState.inLobby;
-	}
+		if (timer == null) {
+			timer = new Timer();
+		}
 
-	public boolean IsPaused(){
-		if (playerState == null) return false;
-		return playerState.paused;
-	}
+		if (initialized){
+			log.debug("Already initialized");
+			return;
+		}
 
-	public String GetStateDescriptor(){
-		return playerState.descriptor;
+		log.debug("Initializing plugin...");
+
+		timer.bestRun = DataManager.loadBestRunFromJson(configManager, gson);
+		if (timer.bestRun == null) {
+			log.debug("No best run loaded");
+		}
+		bestFloorMap = DataManager.loadBestFloorsMapFromJson(configManager, gson);
+		if (bestFloorMap == null){
+			log.debug("No best floor map loaded");
+			bestFloorMap = new HashMap<Integer, Map<Variation,Floor>>();
+		}
+		timer.optRun = buildOptimalRun();
+		if (timer.optRun == null){
+			log.debug("No opt run built");
+		}
+
+		// Covert floor goals to integers
+		if (goalMap == null){
+			goalMap = buildGoalMap();
+		}		
+
+		initialized = true;
 	}
 
 	@Subscribe
@@ -118,82 +134,165 @@ public class HallowedSepulchrePlugin extends Plugin
 		if (player == null) {
 			return;
 		}
-		if (playerState == null) {
-			timer = new Timer();
-			playerState = new WorldState(timer, 0);
-		}
-
-		// Player returned to lobby after completing a run
-		if (playerState.inLobby && playerState.run != null){
-			
-			log.debug("Run completed, processing...");
-
-			// Process it before doing anything
-			playerState.run.Process();
-			
-			// Save last run and clear from state
-			lastRun = playerState.run;
-			playerState.run = null;
-
-			// Evaluate last run against current best
-			bestRun = Run.GetBestRun(bestRun, lastRun);
-
-			// Evaluate last run floors against current opt
-			optRun = Run.GetOptRun(optRun, lastRun);
-
-			addRunToBestFloorMap(lastRun);
-
-			saveBestRunToJson(bestRun);
-
-			saveBestFloorsMapToJson(bestFloorMap);
-
-			if (lastRun.first != null){
-				log.debug("Looted: " + lastRun.first.looted);
-			}
-
-		}
 
 		WorldPoint worldPoint = WorldPoint.fromLocalInstance(client, player.getLocalLocation());
 
 		playerState.xPos = worldPoint.getX();
 		playerState.yPos = worldPoint.getY();
 		playerState.plane = worldPoint.getPlane();
-		int regionID = worldPoint.getRegionID();
+		playerState.regionID = worldPoint.getRegionID();
 
-		if (config.logRegionID()){
-			log.debug("RegionID: " + regionID);
-		}
-
-		playerState = playerState.nextState(regionID);
+		playerState = playerState.nextState();
 
 		playerState.Tick();
 
 	}
 
-	public String GetFloorTime(){
+	/*
+		Status methods
+	 */
 
-		if (timer == null){
-			return "";
-		}
-		if (config.timeDisplay() == TimeDisplay.TICKS){
-			return timer.GetTicks() + "";
-		}
-		return TimeHelper.GetTimeFromSysTime(timer.GetSystemTimeStart(), timer.GetSystemTimeEnd(), 0);
+	public boolean isInSepulchre(){
+		if (playerState == null) return false;
+		return playerState.inSepulchre;
 	}
 
-	public String GetCumulativeTime(){
-		if (timer == null){
-			return "";
-		}
-		if (config.timeDisplay() == TimeDisplay.TICKS){
-			return (timer.GetTicks() + timer.GetCumulativeTicks()) + "";
-		}
-		return TimeHelper.GetTimeFromSysTime(timer.GetSystemTimeStart(), timer.GetSystemTimeEnd(), timer.GetCumulativeSystemTime());
+	public boolean isInLobby(){
+		if (playerState == null) return false;
+		return playerState.inLobby;
+	}
+
+	public boolean isPaused(){
+		if (playerState == null) return false;
+		return playerState.paused;
+	}
+
+	public int getHighestFloor(){
+
+		if (bestFloorMap == null) return 0;
+
+		return bestFloorMap.size();
+
+	}
+
+	/*
+		For display in overlay	
+	*/
+
+	public String getStateDescriptor(){
+		return playerState.descriptor;
 	}
 
 	public String DebugCoords(){
 
 		return "X: " + playerState.xPos + " Y: " + playerState.yPos;
+
+	}
+
+	/*
+		Processing
+	*/
+
+	public void loadFloor(int floor, Variation variation){
+
+		if (timer == null) {
+			return;
+		}
+
+		log.debug("Loading floor info");
+
+		currentFloor = safeGetBestFloor(floor, variation);
+
+		// Seeing floor for first time
+		if (currentFloor == null){
+			log.debug("Floor seen for first time");
+			timer.LoadNewFloor();
+			return;
+		}
+
+		LoadFloorArgs args = new LoadFloorArgs();
+		args.bestFloorMap = bestFloorMap;
+		args.goalMap = goalMap;
+		args.currentFloor = currentFloor;
+		args.highestFloor = getHighestFloor();
+		args.bufferInConfig = config.projectedBuffer();
+		args.bestFloorTicks = currentFloor.GetTicks(0);
+		args.goalFloorTicks = currentFloor.GetTicks(goalMap.get(floor));
+
+		timer.LoadVisitedFloor(args);
+		
+	}
+
+	private Map<Integer, Integer> buildGoalMap(){
+
+		Map<Integer, Integer> goalMap = new HashMap<Integer, Integer>();
+			goalMap.put(1, config.firstFloorGoal().ordinal()); 
+			goalMap.put(2, config.secondFloorGoal().ordinal()); 
+			goalMap.put(3, config.thirdFloorGoal().ordinal()); 
+			goalMap.put(4, config.fourthFloorGoal().ordinal()); 
+			goalMap.put(5, config.fifthFloorGoal().ordinal()); 
+
+		return goalMap;
+
+	}
+
+	private Run buildOptimalRun(){
+
+		log.debug("Building optimal run...");
+
+		Run opt = Run.buildOptimalRun(
+			bestFloorMap, 
+			config.firstFloorGoal().ordinal(), 
+			config.secondFloorGoal().ordinal(), 
+			config.thirdFloorGoal().ordinal(), 
+			config.fourthFloorGoal().ordinal(), 
+			config.fifthFloorGoal().ordinal()
+			);
+
+		opt.Process();
+
+		return opt;
+		
+	}
+
+	public void processLastRun(Run run){
+
+		if (timer == null) {
+			return;
+		}
+
+		// No run to process
+		// This will happen when going from World State -> Lobby State
+		if (run == null) return;
+		// Run was started, but no floors completed
+		// This will happen when going from First Floor -> Lobby before reaching the end goal
+		if (run.first == null) return;
+
+		log.debug("Run completed, processing...");
+
+		// Process it before doing anything
+		run.Process();
+		
+		// Save last run
+		timer.lastRun = run;
+
+		/* 
+		 	This is strictly comparing run time, regardless of looting status
+		*/
+
+		// Evaluate last run against current best
+		timer.bestRun = Run.GetBestRun(timer.bestRun, run);
+
+		addRunToBestFloorMap(run);
+
+		DataManager.saveBestRunToJson(configManager, gson, timer.bestRun);
+
+		DataManager.saveBestFloorsMapToJson(configManager, gson, bestFloorMap);
+
+		// Rebuild optimal run
+		timer.optRun = buildOptimalRun();
+
+		playerState.run = null;
 
 	}
 
@@ -208,63 +307,16 @@ public class HallowedSepulchrePlugin extends Plugin
 		
 	}
 
-	private void saveBestRunToJson(Run run){
-
-		String json = gson.toJson(run);
-		configManager.setConfiguration(CONFIG_GROUP, BEST_RUN_KEY, json);
-
-	}
-
-	private Run loadBestRunFromJson(){
-
-		String json = configManager.getConfiguration(CONFIG_GROUP, BEST_RUN_KEY);
-		if (Strings.isNullOrEmpty(json))
-		{
-			return null;
-		}
-
-		// CHECKSTYLE:OFF
-		return gson.fromJson(json, new TypeToken<Run>(){}.getType());
-		// CHECKSTYLE:ON
-
-	}
-
-	private void saveBestFloorsMapToJson(Map<Integer,Map<Variations,Floor>> bestFloors){
-
-		String json = gson.toJson(bestFloors);
-		log.debug("Floors map: " + json);
-		configManager.setConfiguration(CONFIG_GROUP, BEST_FLOORS, json);
-
-	}
-
-	private Map<Integer,Map<Variations,Floor>> loadBestFloorsMapFromJson(){
-
-		String json = configManager.getConfiguration(CONFIG_GROUP, BEST_FLOORS);
-		if (Strings.isNullOrEmpty(json))
-		{
-			return null;
-		}
-
-		Map<Integer,Map<Variations,Floor>> bestFloorMap = gson.fromJson(json, new TypeToken<Map<Integer,Map<Variations,Floor>>>(){}.getType());
-
-		if (bestFloorMap != null){
-			log.debug("Loaded best floor map");
-		}
-
-		// CHECKSTYLE:OFF
-		return bestFloorMap;
-		// CHECKSTYLE:ON
-
-	}
-
 	private void safeAddFloorToBestFloorMap(Floor newFloor){
 
 		if (newFloor == null) return;
 
-		Map<Variations, Floor> variationsMap = bestFloorMap.get(newFloor.floor);
+		if (bestFloorMap == null) return;
+
+		Map<Variation, Floor> variationsMap = bestFloorMap.get(newFloor.floor);
 		// If floor hasn't been seen yet, make a map for it
 		if (variationsMap == null){
-			variationsMap = new HashMap<Variations, Floor>();
+			variationsMap = new HashMap<Variation, Floor>();
 			bestFloorMap.put(newFloor.floor, variationsMap);
 		}
 		
@@ -272,93 +324,36 @@ public class HallowedSepulchrePlugin extends Plugin
 		// If variation hasn't been seen yet, this new one is best
 		if (current == null) {
 			variationsMap.put(newFloor.variation, newFloor);
+			log.debug("First time seeing variation for: " + newFloor.DisplayName() + " | Ticks: " + newFloor.GetTicks(0));
 			return;
 		}
 
 		// Now we have the current best and the newest run
-		// Compare ticks and overwrite if new is better
-		if (current.ticks > newFloor.ticks){
-			variationsMap.put(newFloor.variation, newFloor);
+		// Compare overall time ticks and overwrite if new is better
+
+		for (int i = 0; i <= 3; i++) {
+
+			if (current.GetTicks(i) > newFloor.GetTicks(i)){
+			current.SetLootTicks(newFloor.GetTicks(i), i);
+			log.debug("New best for floor: " + newFloor.DisplayName() + " | Loot: " + i + " | Ticks: " + newFloor.GetTicks(0));
+			}
+
 		}
+
+		// Save new floor values
+		variationsMap.put(newFloor.variation, current);
 		
 	}
 
-	private Run buildOptimalRun(){
+	public Floor safeGetBestFloor(int floor, Variation variation){
 
-		if (bestFloorMap == null) {
-			return null;
-		}
+		if (bestFloorMap == null) return null;
 
-		Run optimal = new Run();
+		Map<Variation, Floor> variations = bestFloorMap.get(floor);
 
-		Map<Variations, Floor> first = bestFloorMap.get(Regions.FIRST_FLOOR);
-		if (first != null){
-			for (Floor variation : first.values()) {
-				if (optimal.first == null || variation.ticks < optimal.first.ticks){
-					optimal.first = variation;
-				}
-			}
-		}
-		Map<Variations, Floor> second = bestFloorMap.get(Regions.SECOND_FLOOR);
-		if (second != null){
-			for (Floor variation : second.values()) {
-				if (optimal.second == null || variation.ticks < optimal.second.ticks){
-					optimal.second = variation;
-				}
-			}
-		}
-		Map<Variations, Floor> third = bestFloorMap.get(Regions.THIRD_FLOOR);
-		if (third != null){
-			for (Floor variation : third.values()) {
-				if (optimal.third == null || variation.ticks < optimal.third.ticks){
-					optimal.third = variation;
-				}
-			}
-		}
-		Map<Variations, Floor> fourth = bestFloorMap.get(Regions.FOURTH_FLOOR);
-		if (fourth != null){
-			for (Floor variation : fourth.values()) {
-				if (optimal.fourth == null || variation.ticks < optimal.fourth.ticks){
-					optimal.fourth = variation;
-				}
-			}
-		}
-		Map<Variations, Floor> fifth = bestFloorMap.get(Regions.FIFTH_FLOOR);
-		if (fifth != null){
-			for (Floor variation : fifth.values()) {
-				if (optimal.fifth == null || variation.ticks < optimal.fifth.ticks){
-					optimal.fifth = variation;
-				}
-			}
-		}
+		if (variations == null) return null;
 
-		optimal.Process();
-
-		return optimal;
-
-	}
-
-	public String getBestFloorTime(){
-
-		if (playerState == null) return "";
-
-		if (playerState.floor < 1) return "";
-
-		Map<Variations, Floor> variationMap = bestFloorMap.get(playerState.floor);
-
-		// Floor has not been seen
-		if (variationMap == null) {
-			return "--:--";
-		}
-
-		Floor floor = variationMap.get(playerState.variation);
-
-		// This variation has not been seen
-		if (floor == null) {
-			return "--:--";
-		}
-
-		return TimeHelper.GetTimeFromTicks(floor.ticks);
+		return variations.get(variation);
 
 	}
 

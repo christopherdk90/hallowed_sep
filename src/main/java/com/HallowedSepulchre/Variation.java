@@ -1,6 +1,6 @@
 package com.HallowedSepulchre;
 
-public enum Variations {
+public enum Variation {
     None,
     North,
     South,

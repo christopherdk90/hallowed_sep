@@ -1,8 +1,9 @@
 package com.HallowedSepulchre.states;
 
+import com.HallowedSepulchre.HallowedSepulchrePlugin;
 import com.HallowedSepulchre.Regions;
 import com.HallowedSepulchre.Timer;
-import com.HallowedSepulchre.Variations;
+import com.HallowedSepulchre.Variation;
 import com.HallowedSepulchre.helpers.VarHelper;
 import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.runs.Run;
@@ -12,7 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ThirdState extends State {
     
-    public ThirdState(Run run, Timer timer, Variations var) {
+    private boolean grappled;
+    private boolean second_looted;
+
+    public ThirdState(HallowedSepulchrePlugin plugin, Run run, Timer timer, Variation var) {
         super.floor = 3;
         super.run = run;
         super.variation = var;
@@ -21,13 +25,17 @@ public class ThirdState extends State {
         super.timer = timer;
         super.paused = true;
 
+        super.plugin = plugin;
+
         timer.ResetTicks();
 
         log.debug("Starting " + super.descriptor);
+
+        plugin.loadFloor(floor, var);
         
     }
 
-    public State nextState(int region){
+    public State nextState(){
 
         if (buffer == -1){
             // do nothing
@@ -41,25 +49,35 @@ public class ThirdState extends State {
             buffer = -1;
         }
 
-        if (region == Regions.LOBBY){
-            return new LobbyState(run, timer);
+        if (regionID == Regions.LOBBY){
+            return new LobbyState(super.plugin, run, timer);
         }
-        // Two finishing jump tiles trigger clock to pause
-        else if (plane == Regions.FINISH_PLANE 
-            && Regions.THIRD_FINISH_E.Equals(xPos, yPos)) {
-            Save();
+        if (plane == Regions.START_PLANE){
+            if (!grappled && (Regions.THIRD_FLOOR_GRAPPLE_E.Equals(xPos, yPos) ||
+                Regions.THIRD_FLOOR_GRAPPLE_W.Equals(xPos, yPos))){
+                grappled = true;
+                log.debug(super.descriptor + " looted");
+            }
+            else if (!second_looted && (Regions.THIRD_FLOOR_BRAZIER.Equals(xPos, yPos) || 
+                Regions.THIRD_FLOOR_PORTAL.Equals(xPos, yPos))){
+                second_looted = true;
+                log.debug(super.descriptor + " looted");
+            }
         }
-        else if (plane == Regions.FINISH_PLANE 
-            && Regions.THIRD_FINISH_W.Equals(xPos, yPos)) {
-            Save();
+        else if (plane == Regions.FINISH_PLANE){
+            // Two finishing jump tiles trigger clock to pause
+            if (Regions.THIRD_FINISH_E.Equals(xPos, yPos) ||
+                Regions.THIRD_FINISH_W.Equals(xPos, yPos)){
+                Save();
+            }
         }
         // Player has clicked the stairs
-        else if (region == Regions.FOURTH_REGION_START){
-            return new LoadingState(run, timer, 4);
+        else if (regionID == Regions.FOURTH_REGION_START){
+            return new LoadingState(super.plugin, run, timer, 4);
         }
         // else if in world
-        else if (region != Regions.THIRD_REGION_START){
-            return new WorldState(timer, region);
+        else if (regionID != Regions.THIRD_REGION_START){
+            return new WorldState(super.plugin, timer);
         }
 
         return this;
@@ -77,7 +95,15 @@ public class ThirdState extends State {
         if (run == null) return;
         if (run.third != null) return;
 
-        run.third = new Floor(floor, variation, timer.GetTicks(), super.looted);
+        looted = 0;
+        if (grappled) {
+            looted++;
+        }
+        if (second_looted){
+            looted++;
+        }
+
+        run.third = new Floor(floor, variation, timer.GetTicks(), looted);
         timer.SaveSystemTimeEnd();
     }
 

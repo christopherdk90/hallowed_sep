@@ -38,8 +38,8 @@ public final class Regions {
     );
 
     // Loot squares
-    public static Coord FIRST_FLOOR_GRAPPLE = new Coord(2282, 5973); // Plane 1
-    public static Coord FIRST_FLOOR_BRIDGE = new Coord(2262, 5975); // PLane 1
+    public static Coord FIRST_FLOOR_GRAPPLE = new Coord(2282, 5973); // Plane 1 1FN, 1FE?
+    public static Coord FIRST_FLOOR_BRIDGE = new Coord(2262, 5975); // Plane 1 1FW, 1FS?
     
     // First floor ends in transition region
     public static Coord FIRST_END_E = new Coord(2279, 5984);    
@@ -63,6 +63,12 @@ public final class Regions {
     public static Coord SECOND_START_S = new Coord(2528, 5980);
     public static Coord SECOND_START_W = new Coord(2524, 5984);
 
+    // Loot squares
+    public static Coord SECOND_FLOOR_GRAPPLE_E = new Coord(2534, 6004); // Plane 2 2FN Start Region
+    public static Coord SECOND_FLOOR_GRAPPLE_W = new Coord(2522, 6004); // Plane 2 2FW Start Region
+    public static Coord SECOND_FLOOR_BRAZIER_E = new Coord(2527, 5960); // PLane 2 2FE Start Region
+    public static Coord SECOND_FLOOR_BRAZIER_W = new Coord(2521, 5960); // PLane 2 2FS Start Region
+
     public static Coord SECOND_FINISH_N = new Coord(2528, 5991);
     public static Coord SECOND_FINISH_E = new Coord(2535, 5984); 
     public static Coord SECOND_FINISH_S = new Coord(2528, 5977);
@@ -74,6 +80,12 @@ public final class Regions {
 
     public static Coord THIRD_START_E = new Coord(2404, 5856);
     public static Coord THIRD_START_W = new Coord(2396, 5856);
+
+    // Loot squares
+    public static Coord THIRD_FLOOR_GRAPPLE_E = new Coord(2403, 5868); // Plane 2 3FE Start Region
+    public static Coord THIRD_FLOOR_GRAPPLE_W = new Coord(2397, 5867); // Plane 2 3FW Start Region
+    public static Coord THIRD_FLOOR_BRAZIER = new Coord(2415, 5828); // Plane 2 3FE Start Region
+    public static Coord THIRD_FLOOR_PORTAL = new Coord(2386, 5843); // Plane 2 3FW Start Region
 
     public static Coord THIRD_FINISH_E = new Coord(2405, 5856);
     public static Coord THIRD_FINISH_W = new Coord(2395, 5856);
@@ -92,6 +104,11 @@ public final class Regions {
     public static Coord FOURTH_START_N = new Coord(2528, 5860);
     public static Coord FOURTH_START_S = new Coord(2528,5852);
 
+    public static Coord FOURTH_FLOOR_PORTAL = new Coord(2551, 5855); // Plane 2 4FN
+    public static Coord FOURTH_FLOOR_BRIDGE = new Coord(2551, 5855); // Plane 2 4FS
+    public static Coord FOURTH_FLOOR_BRAZIER = new Coord(2539, 5842); // Plane 1 4F
+
+
     public static Coord FOURTH_FINISH_COORD = new Coord(2528, 5845);
 
 
@@ -108,9 +125,17 @@ public final class Regions {
     );
 
     public static int FIFTH_START_PLANE = 2;
+    public static int FIFTH_MIDDLE_PLANE = 0;
     public static int FIFTH_FINISH_PLANE = 0;
 
     public static Coord FIFTH_START_COORD = new Coord(2272, 5884);
+
+    public static Coord FIFTH_FLOOR_PORTAL = new Coord(2261, 5853); // Plane 1 5F
+    public static Coord FIFTH_FLOOR_GRAPPLE = new Coord(2283, 5853); // Plane 1 5F
+    public static Coord FIFTH_FLOOR_BRIDGE = new Coord(2244, 5858); // Plane 0 5F
+
+
+
     public static Coord FIFTH_FINISH_COORD = new Coord(2272, 5863);
 
 

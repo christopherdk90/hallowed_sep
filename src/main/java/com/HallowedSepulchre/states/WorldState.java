@@ -1,5 +1,6 @@
 package com.HallowedSepulchre.states;
 
+import com.HallowedSepulchre.HallowedSepulchrePlugin;
 import com.HallowedSepulchre.Regions;
 import com.HallowedSepulchre.Timer;
 
@@ -8,20 +9,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorldState extends State {
 
-    public WorldState(Timer timer, int region) {
+    public WorldState(HallowedSepulchrePlugin plugin, Timer timer) {
         super.floor = -1;
         super.inSepulchre = false;
         super.inLobby = false;
         super.timer = timer;
 
-        log.debug("Not in Hallowed Sepulchre, regionID: " + region);
+        super.plugin = plugin;
+
+        log.debug("Not in Hallowed Sepulchre, regionID: ");
 
     }
 
-    public State nextState(int region){
-        if (region == Regions.LOBBY) {
+    public State nextState(){
+        if (regionID == Regions.LOBBY) {
             log.debug("Moving to lobby state");
-            return new LobbyState(null, timer);
+            return new LobbyState(super.plugin, null, timer);
         }
         return this;
     }
