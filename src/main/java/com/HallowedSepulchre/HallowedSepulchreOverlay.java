@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import com.HallowedSepulchre.configs.LobbyDisplay;
 import com.HallowedSepulchre.configs.TimeDisplay;
+import com.HallowedSepulchre.constants.Variation;
 import com.HallowedSepulchre.helpers.TimeHelper;
 import com.HallowedSepulchre.helpers.VarHelper;
 import com.HallowedSepulchre.runs.Run;

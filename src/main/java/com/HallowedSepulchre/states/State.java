@@ -2,7 +2,7 @@ package com.HallowedSepulchre.states;
 
 import com.HallowedSepulchre.HallowedSepulchrePlugin;
 import com.HallowedSepulchre.Timer;
-import com.HallowedSepulchre.Variation;
+import com.HallowedSepulchre.constants.Variation;
 import com.HallowedSepulchre.runs.Run;
 
 public abstract class State {

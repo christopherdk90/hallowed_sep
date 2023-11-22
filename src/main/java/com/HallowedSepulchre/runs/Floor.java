@@ -1,6 +1,6 @@
 package com.HallowedSepulchre.runs;
 
-import com.HallowedSepulchre.Variation;
+import com.HallowedSepulchre.constants.Variation;
 import com.HallowedSepulchre.helpers.VarHelper;
 
 public class Floor {

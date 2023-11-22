@@ -2,7 +2,7 @@ package com.HallowedSepulchre.data;
 
 import java.util.Map;
 
-import com.HallowedSepulchre.Variation;
+import com.HallowedSepulchre.constants.Variation;
 import com.HallowedSepulchre.runs.Floor;
 
 public class LoadFloorArgs {

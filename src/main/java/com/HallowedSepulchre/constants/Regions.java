@@ -1,7 +1,9 @@
-package com.HallowedSepulchre;
+package com.HallowedSepulchre.constants;
 
 import java.util.Arrays;
 import java.util.HashSet;
+
+import com.HallowedSepulchre.data.Coord;
 
 public final class Regions {
 

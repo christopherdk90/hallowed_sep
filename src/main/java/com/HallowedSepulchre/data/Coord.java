@@ -1,4 +1,4 @@
-package com.HallowedSepulchre;
+package com.HallowedSepulchre.data;
 
 public final class Coord {
 

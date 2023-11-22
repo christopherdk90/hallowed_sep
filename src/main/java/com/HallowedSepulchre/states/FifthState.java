@@ -1,9 +1,9 @@
 package com.HallowedSepulchre.states;
 
 import com.HallowedSepulchre.HallowedSepulchrePlugin;
-import com.HallowedSepulchre.Regions;
 import com.HallowedSepulchre.Timer;
-import com.HallowedSepulchre.Variation;
+import com.HallowedSepulchre.constants.Regions;
+import com.HallowedSepulchre.constants.Variation;
 import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.runs.Run;
 

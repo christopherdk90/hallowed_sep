@@ -4,13 +4,9 @@ import com.HallowedSepulchre.states.State;
 import com.HallowedSepulchre.states.WorldState;
 import com.HallowedSepulchre.runs.Run;
 import com.HallowedSepulchre.runs.Floor;
-import com.HallowedSepulchre.configs.OneCoffinDisplay;
-import com.HallowedSepulchre.configs.TimeDisplay;
-import com.HallowedSepulchre.helpers.TimeHelper;
-import com.HallowedSepulchre.helpers.VarHelper;
+import com.HallowedSepulchre.constants.Variation;
 import com.HallowedSepulchre.data.DataManager;
 import com.HallowedSepulchre.data.LoadFloorArgs;
-import com.HallowedSepulchre.data.RunManager;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
@@ -24,6 +20,7 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
@@ -31,7 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Hallowed Sepulchre"
+	name = "Hallowed Sepulchre",
+	description = "Improved run timer for the Hallowed Sepulchre",
+	tags = {"hallowedsepulchre", "hallowed", "sepulchre"}
 )
 public class HallowedSepulchrePlugin extends Plugin
 {
@@ -74,6 +73,7 @@ public class HallowedSepulchrePlugin extends Plugin
 
 		timer = new Timer();
 		playerState = new WorldState(this, timer);
+		initialized = false;
 
 	}
 
@@ -145,6 +145,16 @@ public class HallowedSepulchrePlugin extends Plugin
 		playerState = playerState.nextState();
 
 		playerState.Tick();
+
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event) {
+		
+		if (isInLobby() && timer != null) {
+			goalMap = buildGoalMap();
+			timer.optRun = buildOptimalRun();
+		}
 
 	}
 
@@ -249,7 +259,9 @@ public class HallowedSepulchrePlugin extends Plugin
 			config.fifthFloorGoal().ordinal()
 			);
 
-		opt.Process();
+		if (opt != null){
+			opt.Process();
+		}
 
 		return opt;
 		

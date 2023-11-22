@@ -1,15 +1,14 @@
 package com.HallowedSepulchre.states;
 
 import com.HallowedSepulchre.HallowedSepulchrePlugin;
-import com.HallowedSepulchre.Regions;
 import com.HallowedSepulchre.Timer;
-import com.HallowedSepulchre.Variation;
+import com.HallowedSepulchre.constants.Regions;
+import com.HallowedSepulchre.constants.Variation;
 import com.HallowedSepulchre.helpers.VarHelper;
 import com.HallowedSepulchre.runs.Floor;
 import com.HallowedSepulchre.runs.Run;
 
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.client.plugins.Plugin;
 
 @Slf4j
 public class FirstState extends State {

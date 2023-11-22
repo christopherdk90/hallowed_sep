@@ -35,17 +35,6 @@ public interface HallowedSepulchreConfig extends Config
 		return TimeDisplay.TIME;
 	}
 
-	@ConfigItem(
-		name = "Time Reset",
-		keyName = "time-reset",
-		description = "Choose to display either game ticks or time.",
-		position = 0
-	)
-	default boolean timeReset()
-	{
-		return false;
-	}
-
 	@ConfigSection(
 		name = "Run Goals",
 		description = "Set your run goals in order to determine which values will be shown during a run. See the readme for a full explanation.",

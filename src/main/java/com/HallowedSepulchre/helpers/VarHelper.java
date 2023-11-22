@@ -1,6 +1,6 @@
 package com.HallowedSepulchre.helpers;
 
-import com.HallowedSepulchre.Variation;
+import com.HallowedSepulchre.constants.Variation;
 
 public class VarHelper {
     

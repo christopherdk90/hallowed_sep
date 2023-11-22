@@ -1,4 +1,4 @@
-package com.HallowedSepulchre;
+package com.HallowedSepulchre.constants;
 
 public enum Variation {
     None,
