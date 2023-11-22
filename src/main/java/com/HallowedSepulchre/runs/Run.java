@@ -2,8 +2,8 @@ package com.HallowedSepulchre.runs;
 
 import java.util.Map;
 
-import com.HallowedSepulchre.Variation;
-import com.HallowedSepulchre.Regions;
+import com.HallowedSepulchre.constants.Regions;
+import com.HallowedSepulchre.constants.Variation;
 import com.HallowedSepulchre.helpers.TimeHelper;
 
 public class Run {
